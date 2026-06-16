@@ -1,0 +1,7 @@
+{
+  "name": "fleetos-workshop",
+  "owner": { "name": "FleetOS Team" },
+  "plugins": [
+    { "name": "fleetos-toolkit", "source": "./fleetos-toolkit" }
+  ]
+}

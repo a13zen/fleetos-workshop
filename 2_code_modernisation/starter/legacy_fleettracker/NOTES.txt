@@ -1,0 +1,10 @@
+Handover notes (HB, 2021-03)
+============================
+
+- app.py is the entrypoint. python app.py, then http://localhost:5000/status
+- the csv files in data/ are the source of truth since we lost the mysql box
+- calc_next_service / calc_status / calc_priority are the bits that matter,
+  everything else is plumbing
+- /report has its own copy of the priority maths and it has drifted. Finance
+  refuse to let us change the output so just leave it.
+- there was talk of rewriting this in 2019 and again in 2020. good luck.

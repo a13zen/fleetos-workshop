@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FleetOS — Vehicle Dashboard</title>
+    <link rel="stylesheet" href="styles.css?v=starter" />
+    <script src="app.js?v=starter" defer></script>
+  </head>
+  <body>
+    <header class="page-header">
+      <h1>FleetOS</h1>
+      <p class="subtitle">Vehicle Dashboard · Consolidation Prototype</p>
+    </header>
+
+    <section class="summary" aria-label="Fleet summary">
+      <div class="stat-card">
+        <span class="stat-label">Total Vehicles</span>
+        <span class="stat-value" id="stat-total">–</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Active</span>
+        <span class="stat-value" id="stat-active">–</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">In Maintenance</span>
+        <span class="stat-value" id="stat-maintenance">–</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Overdue</span>
+        <span class="stat-value" id="stat-overdue">–</span>
+      </div>
+    </section>
+
+    <section class="maintenance-alert" aria-label="Maintenance due soon">
+      <h2>Maintenance Due Soon</h2>
+      <div id="maintenance-list"></div>
+    </section>
+
+    <section class="filter-bar">
+      <select id="filter-status">
+        <option value="">All Statuses</option>
+        <option value="active">Active</option>
+        <option value="maintenance">Maintenance</option>
+        <option value="overdue">Overdue</option>
+      </select>
+      <input id="filter-location" type="text" placeholder="Filter by location…" />
+      <button id="filter-clear">Clear filters</button>
+    </section>
+
+    <section class="panel">
+      <h2>Fleet Vehicles</h2>
+      <table id="vehicle-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Vehicle</th>
+            <th>Status</th>
+            <th>Location</th>
+            <th class="num">Mileage</th>
+            <th>Last Service</th>
+            <th>Service Due</th>
+            <th>Driver</th>
+          </tr>
+        </thead>
+        <tbody id="vehicle-tbody"></tbody>
+      </table>
+    </section>
+  </body>
+</html>

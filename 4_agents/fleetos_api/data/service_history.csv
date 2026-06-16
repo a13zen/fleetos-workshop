@@ -1,0 +1,36 @@
+vehicle_id,service_date,mileage_at_service,work_performed,cost_eur
+VH-0042,2025-07-14,71800,Oil + filter + brake pads front,612.40
+VH-0042,2026-01-12,83100,Full inspection,890.00
+VH-0017,2025-03-02,138200,Full inspection + timing belt,1840.50
+VH-0017,2025-09-03,151900,Oil + filter,310.00
+VH-0103,2025-08-19,29400,Oil + filter,255.90
+VH-0103,2026-02-20,40100,Full inspection,720.00
+VH-0058,2025-09-28,9800,EV battery health check,180.00
+VH-0058,2026-03-30,18200,EV battery health check + tyres,640.00
+VH-0009,2024-12-10,213400,Full inspection,1100.00
+VH-0009,2025-06-14,223900,Oil + filter,298.00
+VH-0071,2025-10-11,88900,Oil + filter + rear brakes,710.30
+VH-0071,2026-04-10,97200,Full inspection,805.00
+VH-0126,2025-04-03,124600,Full inspection,1320.00
+VH-0126,2025-10-01,138500,Oil + filter,340.00
+VH-0064,2025-05-20,51200,Oil + filter,270.00
+VH-0064,2025-11-18,61900,Full inspection,760.00
+VH-0033,2025-10-06,123400,Full inspection + clutch,2150.00
+VH-0033,2026-04-08,131500,Oil + filter,330.00
+VH-0081,2025-06-07,27100,Oil + filter,245.00
+VH-0081,2025-12-05,37200,Full inspection,690.00
+VH-0029,2025-02-18,163800,Full inspection,1180.00
+VH-0029,2025-08-22,174200,Oil + filter + suspension bushings,920.00
+VH-0140,2026-01-28,8400,EV battery health check,175.00
+VH-0096,2025-04-29,58800,Oil + filter,305.00
+VH-0096,2025-10-30,70900,Full inspection,940.00
+VH-0050,2024-10-05,231800,Oil + filter,260.00
+VH-0050,2025-04-09,240100,Full inspection,980.00
+VH-0112,2025-08-04,14900,Oil + filter,280.00
+VH-0112,2026-02-02,26600,Full inspection,750.00
+VH-0023,2025-03-30,106200,Full inspection,810.00
+VH-0023,2025-09-28,117300,Oil + filter,275.00
+VH-0135,2025-10-14,11200,Oil + filter,240.00
+VH-0135,2026-04-12,22500,Full inspection,700.00
+VH-0077,2025-05-06,43400,Oil + filter,260.00
+VH-0077,2025-11-04,54100,Full inspection,730.00
