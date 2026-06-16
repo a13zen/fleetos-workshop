@@ -1,0 +1,19 @@
+id,make,model,year,vehicle_class,location,mileage_km,assigned_driver
+VH-0042,BMW,3 Series Touring,2021,commercial,Hamburg Depot,84210,J. Brandt
+VH-0017,BMW,X5,2019,commercial,Munich North Logistics Hub - Gate 14,156430,S. Vogel
+VH-0103,BMW,X1,2022,commercial,Berlin Tempelhof,41120,M. Krueger
+VH-0058,BMW,iX1,2024,ev,Stuttgart Sued,18760,A. Lehmann
+VH-0009,BMW,5 Series Touring,2018,passenger,Dingolfing Yard,224980,
+VH-0071,BMW,1 Series,2020,passenger,Frankfurt Service Centre,97540,T. Roth
+VH-0126,BMW,X5,2020,commercial,Dingolfing Distribution Centre - Dock 3,142200,K. Hofmann
+VH-0064,BMW,X3,2021,passenger,Duesseldorf,63310,L. Fischer
+VH-0033,BMW,3 Series Touring,2019,commercial,Leipzig Service Centre,131870,P. Neumann
+VH-0081,BMW,4 Series Gran Coupe,2022,passenger,Koeln Innenstadt,38420,C. Wagner
+VH-0029,BMW,X1,2018,commercial,Bremen Hafen,178650,R. Schulz
+VH-0140,BMW,iX1,2025,ev,Nuernberg Ost,9120,E. Becker
+VH-0096,BMW,X5,2021,commercial,Dresden,72440,N. Hartmann
+VH-0050,BMW,1 Series,2017,passenger,Dingolfing Yard,241300,
+VH-0112,BMW,3 Series Touring,2023,commercial,Hannover Messe - Hall 9,27540,F. Lorenz
+VH-0023,BMW,5 Series Touring,2020,passenger,Dortmund,119870,I. Keller
+VH-0135,BMW,X3,2023,passenger,Muenchen Service Centre,22890,D. Sommer
+VH-0077,BMW,X1,2021,commercial,Essen,55630,H. Winter

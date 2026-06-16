@@ -1,0 +1,5 @@
+[
+  { "category": "Data correctness", "light": "🟡", "summary": "BMW-X5-114 is API-active but has an unresolved high-severity incident." },
+  { "category": "Contract",         "light": "🟢", "summary": "All endpoints return documented status codes and shapes." },
+  { "category": "Security",         "light": "🟡", "summary": "CORS allow_origins is '*' and there is no auth on any route." }
+]

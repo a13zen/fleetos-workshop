@@ -1,0 +1,9 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "fleetos-toolkit",
+  "version": "0.2.0",
+  "description": "FleetOS team toolkit: audit subagents, legacy-freeze guardrails, and /fleet-audit.",
+  "author": { "name": "FleetOS Team" },
+  "skills": ["./skills/"],
+  "hooks": "./hooks/hooks.json"
+}
