@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import date
 from enum import Enum
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -35,13 +36,13 @@ class Vehicle(BaseModel):
     vehicle_class: VehicleClass
     location: str
     mileage_km: int
-    assigned_driver: str | None = None
+    assigned_driver: Optional[str] = None
 
 
 class MaintenanceForecast(BaseModel):
     vehicle_id: str
     status: VehicleStatus
-    last_service_date: date | None
+    last_service_date: Optional[date]
     next_service_date: date
     next_service_km: int
     priority: int
@@ -49,7 +50,7 @@ class MaintenanceForecast(BaseModel):
 
 class VehicleWithForecast(Vehicle):
     status: VehicleStatus
-    last_service_date: date | None
+    last_service_date: Optional[date]
     next_service_date: date
     priority: int
 
@@ -69,8 +70,8 @@ class FuelLogEntry(BaseModel):
     id: int
     vehicle_id: str
     log_date: date
-    litres: float | None = None
-    kwh: float | None = None
+    litres: Optional[float] = None
+    kwh: Optional[float] = None
     cost_eur: float
     odometer_km: int
 
