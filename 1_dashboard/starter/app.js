@@ -1,3 +1,5 @@
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
 async function loadVehicles() {
   const res = await fetch("data/vehicles.json");
   if (!res.ok) {
@@ -20,19 +22,16 @@ function renderSummary(vehicles) {
 
 function renderMaintenanceWidget(vehicles) {
   const now = Date.now();
-  const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
 
   const dueSoon = vehicles
-    .filter((v) => {
-      const serviceTime = new Date(v.next_service_date).getTime();
-      const daysUntil = (serviceTime - now) / (24 * 60 * 60 * 1000);
-      return daysUntil <= 30;
-    })
+    .filter((v) => v.status !== 'retired')
     .map((v) => {
       const serviceTime = new Date(v.next_service_date).getTime();
-      const daysUntil = Math.ceil((serviceTime - now) / (24 * 60 * 60 * 1000));
-      return { ...v, daysUntil };
+      const daysUntilRaw = (serviceTime - now) / (24 * 60 * 60 * 1000);
+      const daysUntil = Math.ceil(daysUntilRaw);
+      return { ...v, daysUntilRaw, daysUntil };
     })
+    .filter((v) => v.daysUntilRaw <= 30)
     .sort((a, b) => a.daysUntil - b.daysUntil);
 
   const section = document.createElement("section");
@@ -55,7 +54,7 @@ function renderMaintenanceWidget(vehicles) {
     for (const v of dueSoon) {
       const item = document.createElement("div");
       item.className = "maintenance-item";
-      const isOverdue = v.daysUntil < 0;
+      const isOverdue = v.daysUntilRaw < 0;
       const daysLabel = isOverdue
         ? `${Math.abs(v.daysUntil)} day${Math.abs(v.daysUntil) !== 1 ? "s" : ""} overdue`
         : v.daysUntil === 0
@@ -63,9 +62,9 @@ function renderMaintenanceWidget(vehicles) {
         : `${v.daysUntil} day${v.daysUntil !== 1 ? "s" : ""} remaining`;
 
       item.innerHTML = `
-        <span class="maint-id">${v.id}</span>
-        <span class="maint-vehicle">${v.make} ${v.model} (${v.year})</span>
-        <span class="maint-date">${v.next_service_date}</span>
+        <span class="maint-id">${esc(v.id)}</span>
+        <span class="maint-vehicle">${esc(v.make)} ${esc(v.model)} (${esc(v.year)})</span>
+        <span class="maint-date">${esc(v.next_service_date)}</span>
         <span class="maint-days ${isOverdue ? "maint-overdue" : "maint-soon"}">${daysLabel}</span>
       `;
       list.appendChild(item);
@@ -75,8 +74,10 @@ function renderMaintenanceWidget(vehicles) {
   }
 
   // Insert between summary stats and vehicle table panel
-  const tablePanelSection = document.querySelector(".panel");
-  tablePanelSection.parentNode.insertBefore(section, tablePanelSection);
+  const tablePanelSection = document.getElementById('fleet-panel');
+  if (tablePanelSection) {
+    tablePanelSection.parentNode.insertBefore(section, tablePanelSection);
+  }
 }
 
 function renderTable(vehicles) {
@@ -85,15 +86,16 @@ function renderTable(vehicles) {
 
   for (const v of vehicles) {
     const tr = document.createElement("tr");
+    const safeStatus = ['active','maintenance','overdue','retired'].includes(v.status) ? v.status : 'unknown';
     tr.innerHTML = `
-      <td>${v.id}</td>
-      <td>${v.make} ${v.model} (${v.year})</td>
-      <td><span class="status-pill status-${v.status}">${v.status}</span></td>
-      <td class="col-location">${v.location}</td>
+      <td>${esc(v.id)}</td>
+      <td>${esc(v.make)} ${esc(v.model)} (${esc(v.year)})</td>
+      <td><span class="status-pill status-${safeStatus}">${esc(v.status)}</span></td>
+      <td class="col-location">${esc(v.location)}</td>
       <td class="num">${formatKm(v.mileage_km)}</td>
-      <td>${v.last_service_date}</td>
-      <td>${v.next_service_date}</td>
-      <td>${v.assigned_driver ?? "—"}</td>
+      <td>${esc(v.last_service_date)}</td>
+      <td>${esc(v.next_service_date)}</td>
+      <td>${esc(v.assigned_driver ?? "—")}</td>
     `;
     tbody.appendChild(tr);
   }
