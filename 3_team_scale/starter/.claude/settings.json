@@ -2,7 +2,7 @@
   "permissions": {
     "defaultMode": "dontAsk",
     "allow": [
-      "Bash(curl *localhost:8001*)",
+      "Bash(curl http://localhost:8001/*)",
       "Read",
       "Grep",
       "Glob",
@@ -23,7 +23,7 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "Edit|Write",
+        "matcher": "Edit|Write|MultiEdit",
         "hooks": [
           { "type": "command", "command": ".claude/hooks/py-syntax.sh" }
         ]
