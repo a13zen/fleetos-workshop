@@ -31,7 +31,7 @@ function renderTable(vehicles) {
       <td class="col-location">${v.location}</td>
       <td class="num">${formatKm(v.mileage_km)}</td>
       <td>${v.last_service_date}</td>
-      <td>${v.last_service_date}</td>
+      <td>${v.next_service_date}</td>
       <td>${v.assigned_driver ?? "—"}</td>
     `;
     tbody.appendChild(tr);
