@@ -8,14 +8,16 @@ Run:
     python step1_agent.py
 
 Requires:
-    ANTHROPIC_API_KEY env var (or set in .env)
+    AWS_BEARER_TOKEN_BEDROCK env var
+    AWS_REGION env var (optional, defaults to eu-central-1)
 """
 
 import os
 import sys
 import csv
+import json
+import httpx
 from pathlib import Path
-import anthropic
 
 # Load .env if present
 try:
@@ -27,7 +29,34 @@ except ImportError:
 HERE = Path(__file__).resolve().parent
 FLEET_DATA_DIR = HERE.parent / "fleetos_api" / "data"
 
-MODEL = "claude-haiku-4-5"
+MODEL = "eu.anthropic.claude-haiku-4-5-20251001-v1:0"
+
+
+def call_claude(messages, tools=None, system=None, max_tokens=4096):
+    token = os.environ.get("AWS_BEARER_TOKEN_BEDROCK")
+    if not token:
+        raise RuntimeError("AWS_BEARER_TOKEN_BEDROCK environment variable not set")
+    region = os.environ.get("AWS_REGION", "eu-central-1")
+
+    url = f"https://bedrock-runtime.{region}.amazonaws.com/model/{MODEL}/invoke"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+    body = {
+        "anthropic_version": "bedrock-2023-05-31",
+        "max_tokens": max_tokens,
+        "messages": messages,
+    }
+    if tools:
+        body["tools"] = tools
+    if system:
+        body["system"] = system
+
+    r = httpx.post(url, headers=headers, json=body, timeout=120.0)
+    r.raise_for_status()
+    return r.json()
 
 # Tool definition: read a CSV file and return its contents as a string
 TOOLS = [
@@ -105,20 +134,14 @@ def process_tool_call(tool_name: str, tool_input: dict) -> str:
 
 def run_agent(prompt: str, verbose: bool = False) -> str:
     """
-    Run a simple agentic loop using the Anthropic SDK.
+    Run a simple agentic loop using Bedrock bearer token auth via httpx.
     Continues until the model stops calling tools.
     Returns the final text response.
     """
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        print("Error: ANTHROPIC_API_KEY environment variable is not set.", file=sys.stderr)
-        sys.exit(1)
-
-    client = anthropic.Anthropic(api_key=api_key)
-
     messages = [{"role": "user", "content": prompt}]
     MAX_TURNS = 20
     turn = 0
+    response = None
 
     while True:
         turn += 1
@@ -128,39 +151,37 @@ def run_agent(prompt: str, verbose: bool = False) -> str:
         if verbose:
             print(f"\n[Turn {turn}] Sending to model...")
 
-        response = client.messages.create(
-            model=MODEL,
-            max_tokens=4096,
-            tools=TOOLS,
-            messages=messages,
-        )
+        response = call_claude(messages, tools=TOOLS, max_tokens=4096)
+
+        stop_reason = response["stop_reason"]
+        content = response["content"]
 
         if verbose:
-            print(f"[Turn {turn}] Stop reason: {response.stop_reason}")
+            print(f"[Turn {turn}] Stop reason: {stop_reason}")
 
         # Append assistant response to the conversation
-        messages.append({"role": "assistant", "content": response.content})
+        messages.append({"role": "assistant", "content": content})
 
-        if response.stop_reason == "max_tokens":
+        if stop_reason == "max_tokens":
             print(f"Warning: response truncated at turn {turn}")
             break
 
         # If no more tool calls, we're done
-        if response.stop_reason == "end_turn":
+        if stop_reason == "end_turn":
             # Extract text from the final response
-            for block in response.content:
-                if hasattr(block, "text"):
-                    return block.text
+            for block in content:
+                if block.get("type") == "text":
+                    return block["text"]
             return ""
 
         # Process tool calls
         tool_results = []
-        for block in response.content:
-            if block.type == "tool_use":
+        for block in content:
+            if block.get("type") == "tool_use":
                 if verbose:
-                    print(f"[Turn {turn}] -> Tool: {block.name}({block.input})")
+                    print(f"[Turn {turn}] -> Tool: {block['name']}({block['input']})")
 
-                result = process_tool_call(block.name, block.input)
+                result = process_tool_call(block["name"], block["input"])
 
                 if verbose:
                     preview = result[:200] + "..." if len(result) > 200 else result
@@ -168,7 +189,7 @@ def run_agent(prompt: str, verbose: bool = False) -> str:
 
                 tool_results.append({
                     "type": "tool_result",
-                    "tool_use_id": block.id,
+                    "tool_use_id": block["id"],
                     "content": result,
                 })
 
@@ -180,9 +201,10 @@ def run_agent(prompt: str, verbose: bool = False) -> str:
         messages.append({"role": "user", "content": tool_results})
 
     # Fallback: extract text from last assistant response
-    for block in response.content:
-        if hasattr(block, "text"):
-            return block.text
+    if response:
+        for block in response["content"]:
+            if block.get("type") == "text":
+                return block["text"]
     return ""
 
 
