@@ -20,7 +20,6 @@ import os
 import re
 import httpx
 from mcp.server.fastmcp import FastMCP
-from mcp.types import TextContent
 
 FLEETOS_API = os.environ.get("FLEETOS_API", "http://localhost:8001")
 
@@ -54,7 +53,7 @@ def get_maintenance(vehicle_id: str) -> dict:
     list_vehicles.
     """
     if not re.fullmatch(r'VH-\d{4}', vehicle_id):
-        return [TextContent(type="text", text=f"Error: invalid vehicle_id format: {vehicle_id!r}")]
+        raise ValueError(f"Invalid vehicle_id format: {vehicle_id!r}. Expected format: VH-XXXX")
     r = httpx.get(f"{FLEETOS_API}/vehicles/{vehicle_id}/maintenance", timeout=10.0)
     r.raise_for_status()
     return r.json()
@@ -72,7 +71,7 @@ def get_service_history(vehicle_id: str) -> list[dict]:
     list_vehicles.
     """
     if not re.fullmatch(r'VH-\d{4}', vehicle_id):
-        return [TextContent(type="text", text=f"Error: invalid vehicle_id format: {vehicle_id!r}")]
+        raise ValueError(f"Invalid vehicle_id format: {vehicle_id!r}. Expected format: VH-XXXX")
     r = httpx.get(f"{FLEETOS_API}/vehicles/{vehicle_id}/history", timeout=10.0)
     r.raise_for_status()
     return r.json()
