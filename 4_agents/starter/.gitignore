@@ -1,0 +1,12 @@
+# Agent run outputs
+MONDAY_BRIEFING*.md
+OPS_PLAN*.md
+VH-*.txt
+bay_allocation*.md
+driver_notifications*.txt
+briefing_*.json
+
+# Runtime
+__pycache__/
+*.pyc
+.venv/
