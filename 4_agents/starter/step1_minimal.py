@@ -27,7 +27,7 @@ async def main():
             "those have no assigned driver? Answer in a short table."
         ),
         options=ClaudeAgentOptions(
-            model="claude-sonnet-4-5",
+            model="eu.anthropic.claude-haiku-4-5-20251001-v1:0",
             allowed_tools=["Read", "Glob", "Bash"],
             permission_mode="bypassPermissions",
             setting_sources=["local"],

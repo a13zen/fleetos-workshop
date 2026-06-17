@@ -28,9 +28,10 @@ MCP_SERVERS = {
         "command": sys.executable,
         "args": [str(HERE / "step2_fleetos_mcp.py")],
     },
-    # TODO: add a "sqlite" entry that runs:
-    #     uvx mcp-server-sqlite --db-path <DB_PATH>
-    # (mirror the shape of the "fleetos" entry above — command + args list)
+    "sqlite": {
+        "command": sys.executable,
+        "args": [str(HERE / "run_sqlite_mcp.py"), "--db-path", str(DB_PATH)],
+    },
 }
 
 DEFAULT_QUESTION = (
@@ -56,7 +57,7 @@ async def main():
             f"then answer:\n\n{question}"
         ),
         options=ClaudeAgentOptions(
-            model="claude-sonnet-4-6",
+            model="eu.anthropic.claude-haiku-4-5-20251001-v1:0",
             mcp_servers=MCP_SERVERS,
             # Least-privilege: the agent can ONLY call these two services.
             # No Bash, no Write — DB rows and API responses are untrusted
