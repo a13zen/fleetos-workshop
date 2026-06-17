@@ -1,6 +1,14 @@
+# Legacy FleetTracker
 flask>=3
+
+# FleetOS API
 fastapi
 uvicorn[standard]
 pydantic>=2
+
+# Testing
 pytest
 httpx
+
+# Date utilities (stdlib datetime is used; python-dateutil available if needed)
+python-dateutil
