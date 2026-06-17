@@ -9,6 +9,7 @@ async function loadVehicles() {
 }
 
 function formatKm(km) {
+  if (typeof km !== 'number') return '—';
   return km.toLocaleString("de-DE") + " km";
 }
 
