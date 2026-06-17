@@ -1,0 +1,21 @@
+Subject: Workshop Appointment Notification – VH-0064
+
+Dear Driver,
+
+Your vehicle VH-0064 (BMW X3) has been scheduled for routine workshop service.
+
+APPOINTMENT DETAILS:
+Date: Thursday, 20 June 2026
+Time: 08:00-12:00
+Location: Duesseldorf, Bay 2
+Vehicle Reference: VH-0064
+
+REASON FOR SERVICE:
+Your vehicle is 30 days overdue for scheduled maintenance. Please bring your vehicle in for this routine service to maintain roadworthiness and fleet standards.
+
+Please report to the depot by 08:00 sharp. Allow 4 hours for service completion. Bring your vehicle keys and documentation.
+
+For any questions or to reschedule, contact Duesseldorf directly.
+
+Regards,
+Fleet Operations Team
