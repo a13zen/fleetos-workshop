@@ -1,0 +1,101 @@
+FLEET SERVICE NOTIFICATIONS - WEEK OF [DATE]
+
+---
+
+VEHICLE: VH-0017 (BMW X5, Munich North Logistics Hub)
+DRIVER: S. Vogel
+
+Subject: Service Required This Week – VH-0017 Engine Management Alert
+
+Dear S. Vogel,
+
+Your vehicle VH-0017 requires urgent workshop attention this week. Our diagnostics show an active engine management warning light, and the vehicle is also overdue for scheduled service.
+
+Please arrange to drop off VH-0017 at Munich North Workshop by end of business Wednesday. Our team will complete diagnostic checks and full service maintenance. Expected turnaround is one business day.
+
+Contact our dispatch team on extension 5234 to confirm your drop-off time.
+
+Thank you for your prompt attention to this matter.
+
+Best regards,
+Fleet Operations Team
+
+---
+
+VEHICLE: VH-0029 (BMW X1, Bremen Hafen)
+DRIVER: R. Schulz
+
+Subject: Service Required This Week – VH-0029 Braking Issue
+
+Dear R. Schulz,
+
+Your vehicle VH-0029 requires workshop service this week. We've noted pulling to the left under braking and the vehicle is also overdue for scheduled maintenance.
+
+Please drop off VH-0029 at Bremen Central Workshop by end of business Thursday. Our technicians will inspect the braking system and complete full service. One business day should cover all work.
+
+Kindly confirm your drop-off appointment by calling dispatch on extension 5234.
+
+We appreciate your cooperation.
+
+Best regards,
+Fleet Operations Team
+
+---
+
+VEHICLE: VH-0009 (BMW 5 Series Touring, Dingolfing Yard)
+DEPOT MANAGER NOTIFICATION
+
+Subject: Workshop Call-In – VH-0009 Overdue Service
+
+Dear Depot Manager,
+
+Vehicle VH-0009 (BMW 5 Series Touring) requires scheduling for workshop service this week due to overdue maintenance.
+
+Please arrange drop-off at Dingolfing Central Workshop at your earliest convenience. Standard service cycle should take one business day.
+
+Notify dispatch (extension 5234) of your scheduled appointment.
+
+Thank you.
+
+Best regards,
+Fleet Operations Team
+
+---
+
+VEHICLE: VH-0050 (BMW 1 Series, Dingolfing Yard)
+DEPOT MANAGER NOTIFICATION
+
+Subject: Workshop Call-In – VH-0050 Overdue Service
+
+Dear Depot Manager,
+
+Vehicle VH-0050 (BMW 1 Series) requires scheduling for workshop service this week due to overdue maintenance.
+
+Please arrange drop-off at Dingolfing Central Workshop this week. Standard service cycle will take one business day.
+
+Contact dispatch (extension 5234) to confirm your appointment.
+
+Thank you.
+
+Best regards,
+Fleet Operations Team
+
+---
+
+VEHICLE: VH-0126 (BMW X5, Dingolfing Distribution Centre)
+DRIVER: K. Hofmann
+
+Subject: Service This Week – VH-0126 Door Maintenance
+
+Dear K. Hofmann,
+
+Your vehicle VH-0126 requires workshop attention this week. We've logged a sticking door issue, and the vehicle is also due for scheduled service maintenance.
+
+Please drop off VH-0126 at Dingolfing Central Workshop by end of business Friday. Our team will address the door mechanism and complete routine service. Expect one business day turnaround.
+
+Confirm your drop-off time with dispatch on extension 5234.
+
+Thank you for your attention.
+
+Best regards,
+Fleet Operations Team
