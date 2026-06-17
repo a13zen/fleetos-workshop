@@ -9,6 +9,7 @@ Runs on port 8001. CORS enabled for localhost:8000.
 from __future__ import annotations
 
 import datetime
+import os
 from typing import List
 
 from fastapi import FastAPI, HTTPException
@@ -32,66 +33,74 @@ app.add_middleware(
 @app.get("/vehicles", response_model=List[VehicleWithMaintenance])
 def get_vehicles():
     """Return all vehicles with their current status and maintenance info."""
-    today = datetime.date.today()
-    vehicles = load_vehicles()
-    service_history = load_service_history()
+    try:
+        today = datetime.date.today()
+        vehicles = load_vehicles()
+        service_history = load_service_history()
 
-    # Build a lookup for last service date per vehicle
-    from fleetos_api.maintenance import _last_service
+        # Build a lookup for last service date per vehicle
+        from fleetos_api.maintenance import _last_service
 
-    results: List[VehicleWithMaintenance] = []
-    for v in vehicles:
-        due_date, due_km = calc_next_service(v, service_history, today)
-        status = calc_status(v, service_history, today)
-        priority = calc_priority(v, service_history, today)
-        last = _last_service(v.id, service_history)
-        results.append(
-            VehicleWithMaintenance(
-                id=v.id,
-                make=v.make,
-                model=v.model,
-                year=v.year,
-                vehicle_class=v.vehicle_class,
-                location=v.location,
-                mileage_km=v.mileage_km,
-                assigned_driver=v.assigned_driver,
-                status=status,
-                next_service_date=due_date,
-                next_service_km=due_km,
-                priority=priority,
-                last_service_date=last.service_date if last else None,
+        results: List[VehicleWithMaintenance] = []
+        for v in vehicles:
+            due_date, due_km = calc_next_service(v, service_history, today)
+            status = calc_status(v, service_history, today)
+            priority = calc_priority(v, service_history, today)
+            last = _last_service(v.id, service_history)
+            results.append(
+                VehicleWithMaintenance(
+                    id=v.id,
+                    make=v.make,
+                    model=v.model,
+                    year=v.year,
+                    vehicle_class=v.vehicle_class,
+                    location=v.location,
+                    mileage_km=v.mileage_km,
+                    assigned_driver=v.assigned_driver,
+                    status=status,
+                    next_service_date=due_date,
+                    next_service_km=due_km,
+                    priority=priority,
+                    last_service_date=last.service_date if last else None,
+                )
             )
-        )
-    return results
+        return results
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail="Data unavailable") from exc
 
 
 @app.get("/vehicles/{vehicle_id}/maintenance", response_model=MaintenanceResult)
 def get_vehicle_maintenance(vehicle_id: str):
     """Return maintenance details for a single vehicle."""
-    today = datetime.date.today()
-    vehicles = load_vehicles()
-    vehicle = next((v for v in vehicles if v.id == vehicle_id), None)
-    if vehicle is None:
-        raise HTTPException(status_code=404, detail=f"Vehicle {vehicle_id!r} not found")
+    try:
+        today = datetime.date.today()
+        vehicles = load_vehicles()
+        vehicle = next((v for v in vehicles if v.id == vehicle_id), None)
+        if vehicle is None:
+            raise HTTPException(status_code=404, detail=f"Vehicle {vehicle_id!r} not found")
 
-    service_history = load_service_history()
-    from fleetos_api.maintenance import _last_service
+        service_history = load_service_history()
+        from fleetos_api.maintenance import _last_service
 
-    due_date, due_km = calc_next_service(vehicle, service_history, today)
-    status = calc_status(vehicle, service_history, today)
-    priority = calc_priority(vehicle, service_history, today)
-    last = _last_service(vehicle.id, service_history)
+        due_date, due_km = calc_next_service(vehicle, service_history, today)
+        status = calc_status(vehicle, service_history, today)
+        priority = calc_priority(vehicle, service_history, today)
+        last = _last_service(vehicle.id, service_history)
 
-    return MaintenanceResult(
-        vehicle_id=vehicle.id,
-        status=status,
-        next_service_date=due_date,
-        next_service_km=due_km,
-        priority=priority,
-        last_service_date=last.service_date if last else None,
-    )
+        return MaintenanceResult(
+            vehicle_id=vehicle.id,
+            status=status,
+            next_service_date=due_date,
+            next_service_km=due_km,
+            priority=priority,
+            last_service_date=last.service_date if last else None,
+        )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail="Data unavailable") from exc
 
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("fleetos_api.main:app", host="0.0.0.0", port=8001, reload=False)
+    uvicorn.run("fleetos_api.main:app", host=os.environ.get("FLEETOS_HOST", "127.0.0.1"), port=8001, reload=False)

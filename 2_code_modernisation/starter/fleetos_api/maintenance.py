@@ -9,7 +9,7 @@ from __future__ import annotations
 import datetime
 from typing import List, Optional, Tuple
 
-from fleetos_api.models import Vehicle, ServiceRecord, VehicleStatus
+from fleetos_api.models import Vehicle, ServiceRecord, VehicleClass, VehicleStatus
 
 # --- constants (identical to legacy) ----------------------------------------
 SERVICE_INTERVAL_KM = 30000           # commercial default
@@ -133,7 +133,7 @@ def calc_priority(
         score = score + min(days_over, 60)
     if km_over > 0:
         score = score + min(km_over // 250, 40)
-    if vehicle.vehicle_class == "commercial":
+    if vehicle.vehicle_class == VehicleClass.commercial:
         score = score + 10  # vans earn money, prioritise
     if score > 100:
         score = 100

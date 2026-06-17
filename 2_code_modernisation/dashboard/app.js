@@ -1,5 +1,7 @@
 const API_BASE = "http://localhost:8001";
 
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
 function setDataSourceBadge(source) {
   const badge = document.getElementById("data-source-badge");
   if (!badge) return;
@@ -42,6 +44,7 @@ function renderSummary(vehicles) {
   document.getElementById("stat-active").textContent = count("active");
   document.getElementById("stat-maintenance").textContent = count("maintenance");
   document.getElementById("stat-overdue").textContent = count("overdue");
+  document.getElementById("stat-retired").textContent = count("retired");
 }
 
 function renderTable(vehicles) {
@@ -51,14 +54,14 @@ function renderTable(vehicles) {
   for (const v of vehicles) {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${v.id}</td>
-      <td>${v.make} ${v.model} (${v.year})</td>
-      <td><span class="status-pill status-${v.status}">${v.status}</span></td>
-      <td class="col-location">${v.location}</td>
+      <td>${esc(v.id)}</td>
+      <td>${esc(v.make)} ${esc(v.model)} (${esc(v.year)})</td>
+      <td><span class="status-pill status-${esc(v.status)}">${esc(v.status)}</span></td>
+      <td class="col-location">${esc(v.location)}</td>
       <td class="num">${formatKm(v.mileage_km)}</td>
-      <td>${v.last_service_date ?? "—"}</td>
-      <td>${v.next_service_date ?? "—"}</td>
-      <td>${v.assigned_driver ?? "—"}</td>
+      <td>${esc(v.last_service_date ?? "—")}</td>
+      <td>${esc(v.next_service_date ?? "—")}</td>
+      <td>${esc(v.assigned_driver ?? "—")}</td>
     `;
     tbody.appendChild(tr);
   }
@@ -90,8 +93,8 @@ function renderMaintenanceSoon(vehicles) {
     .map(
       (v) => `
       <div class="maintenance-item">
-        <span class="maintenance-id">${v.id}</span>
-        <span class="maintenance-vehicle">${v.make} ${v.model}</span>
+        <span class="maintenance-id">${esc(v.id)}</span>
+        <span class="maintenance-vehicle">${esc(v.make)} ${esc(v.model)}</span>
         <span class="maintenance-days">${v.daysUntil === 0 ? "Today" : `${v.daysUntil}d`}</span>
       </div>`
     )
