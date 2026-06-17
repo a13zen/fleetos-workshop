@@ -117,7 +117,7 @@ async function loadAgentBriefing() {
     return n;
   };
   const riskClass = (r) =>
-    ["low", "medium", "high"].includes(String(r).toLowerCase())
+    ["low", "medium", "high", "critical"].includes(String(r).toLowerCase())
       ? `risk-${String(r).toLowerCase()}`
       : "risk-unknown";
 

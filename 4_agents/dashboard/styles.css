@@ -340,6 +340,12 @@ body {
   font-size: 12px;
 }
 
+.risk-critical {
+  background: #7f1d1d;
+  color: #fca5a5;
+  font-weight: 700;
+}
+
 .risk-high {
   background: #450a0a;
   color: #f87171;

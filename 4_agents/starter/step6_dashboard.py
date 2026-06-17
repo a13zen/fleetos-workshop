@@ -1,20 +1,15 @@
 """
-Step 4 — Fleet Analyst.
+Step 6 — Dashboard Feed.
 
-Turn the step-3 agent into a *specialist* with a system prompt and the
-ability to write a file. Output: MONDAY_BRIEFING.md — the report a fleet
-manager would otherwise compile by hand every week.
+Extends step 4 (Fleet Analyst) with an additional output: a JSON file
+consumed by the web dashboard. The agent writes:
 
-DON'T write this yourself. Open Claude Code in this directory and ask:
+  - MONDAY_BRIEFING.md  (same as step 4)
+  - ../dashboard/briefing.json  (array of {vehicle_id, risk, action, why}
+    for every vehicle needing attention this week)
 
-    Fill in step4_analyst.py following the pattern in step3_two_sources.py.
-    Give it a system_prompt that makes it a fleet operations analyst, allow
-    it to Write, and have it produce MONDAY_BRIEFING.md with sections for:
-    top risks, cost exposure this month, recommended depot moves, and a
-    one-paragraph executive summary.
-
-Then run:  python step4_analyst.py --verbose
-…and open MONDAY_BRIEFING.md.
+Run:  python step6_dashboard.py --verbose
+Then open the dashboard to see the briefing cards populated automatically.
 """
 
 import sys
@@ -66,8 +61,10 @@ Read the FleetOS maintenance API (mcp__fleetos__*) and the operational
 SQLite database (mcp__sqlite__*) to gather the full picture of the fleet
 right now.
 
-Then write MONDAY_BRIEFING.md in the current directory with the following
-sections:
+Then produce TWO output files:
+
+--- File 1: MONDAY_BRIEFING.md ---
+Write MONDAY_BRIEFING.md in the current directory with the following sections:
 
 1. **Top Risks** — vehicles that are overdue or flagged critical, ranked by
    priority. Include vehicle ID, current status, and days overdue.
@@ -84,11 +81,24 @@ sections:
    briefing email to the operations director.
 
 Use markdown formatting. Include a timestamp at the top of the file.
+
+--- File 2: ../dashboard/briefing.json ---
+Write ../dashboard/briefing.json containing a JSON array of objects for
+every vehicle that needs attention this week. Each object must have exactly
+these four fields:
+  - vehicle_id  : string, the vehicle identifier
+  - risk        : string, one of "critical", "high", "medium", or "low"
+  - action      : string, short imperative describing what must be done
+                  (e.g. "Book workshop slot", "Redirect to Depot B")
+  - why         : string, one sentence explaining the reason
+
+Only include vehicles genuinely needing action this week — do not pad the
+list. Ensure the JSON is valid and pretty-printed with 2-space indentation.
 """
 
 
 async def main():
-    print("📋 Step 4 — Fleet Analyst")
+    print("📊 Step 6 — Fleet Analyst + Dashboard Feed")
     print("=" * 50)
 
     async for message in query(
@@ -107,7 +117,9 @@ async def main():
         if hasattr(message, "result"):
             print("\n" + "=" * 50)
             print(message.result)
-            print("\nBriefing written to MONDAY_BRIEFING.md")
+            print("\nFiles written:")
+            print("  - MONDAY_BRIEFING.md")
+            print("  - ../dashboard/briefing.json")
 
 
 if __name__ == "__main__":
