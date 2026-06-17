@@ -6,4 +6,7 @@ if [[ $? -ne 0 || -z "$path" ]]; then
   exit 0
 fi
 [[ "$path" == *.py ]] || exit 0
-python3 -m py_compile "$path" 2>&1 || exit 2
+if ! python3 -m py_compile "$path" 2>&1; then
+  printf '%s\n' "{\"decision\":\"block\",\"reason\":\"Python syntax error in ${path}\"}"
+  exit 2
+fi
