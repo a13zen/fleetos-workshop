@@ -55,7 +55,12 @@ def call_claude(messages, tools=None, system=None, max_tokens=4096):
         body["system"] = system
 
     r = httpx.post(url, headers=headers, json=body, timeout=120.0)
-    r.raise_for_status()
+    try:
+        r.raise_for_status()
+    except httpx.HTTPStatusError as e:
+        raise RuntimeError(
+            f"Bedrock API error {e.response.status_code}: {e.response.text}"
+        ) from e
     return r.json()
 
 # Tool definition: read a CSV file and return its contents as a string
