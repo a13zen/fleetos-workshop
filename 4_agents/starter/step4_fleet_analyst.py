@@ -1,7 +1,7 @@
 """
 Stage 4 — Fleet Analyst specialist agent.
 
-An Anthropic client with a "Fleet Analyst" system prompt.
+Uses Bedrock bearer token auth via httpx with a "Fleet Analyst" system prompt.
 Has access to:
   - FleetOS MCP (vehicle & maintenance data)
   - SQLite MCP (incidents, fuel_log, depot_capacity)
@@ -17,18 +17,19 @@ Run:
     python step4_fleet_analyst.py [--verbose]
 
 Requires:
-    ANTHROPIC_API_KEY env var
+    AWS_BEARER_TOKEN_BEDROCK env var
+    AWS_REGION env var (optional, defaults to eu-central-1)
     FleetOS API running on localhost:8001
 """
 
 import os
 import sys
 import json
+import httpx
 import subprocess
 import pathlib
 from pathlib import Path
 from typing import Any
-import anthropic
 
 # Load .env if present
 try:
@@ -39,7 +40,34 @@ except ImportError:
 
 HERE = Path(__file__).resolve().parent
 DB_PATH = HERE / "data" / "fleet_ops.db"
-MODEL = "claude-haiku-4-5"
+MODEL = "eu.anthropic.claude-haiku-4-5-20251001-v1:0"
+
+
+def call_claude(messages, tools=None, system=None, max_tokens=4096):
+    token = os.environ.get("AWS_BEARER_TOKEN_BEDROCK")
+    if not token:
+        raise RuntimeError("AWS_BEARER_TOKEN_BEDROCK environment variable not set")
+    region = os.environ.get("AWS_REGION", "eu-central-1")
+
+    url = f"https://bedrock-runtime.{region}.amazonaws.com/model/{MODEL}/invoke"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+    body = {
+        "anthropic_version": "bedrock-2023-05-31",
+        "max_tokens": max_tokens,
+        "messages": messages,
+    }
+    if tools:
+        body["tools"] = tools
+    if system:
+        body["system"] = system
+
+    r = httpx.post(url, headers=headers, json=body, timeout=120.0)
+    r.raise_for_status()
+    return r.json()
 
 SYSTEM_PROMPT = """\
 You are the Fleet Operations Analyst for a 12-vehicle commercial BMW fleet based in Germany.
@@ -216,11 +244,6 @@ def handle_write_file(path: str, content: str) -> str:
 
 def run_fleet_analyst(verbose: bool = False) -> str:
     """Run the Fleet Analyst agent and return its final response."""
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        print("Error: ANTHROPIC_API_KEY environment variable is not set.", file=sys.stderr)
-        sys.exit(1)
-
     fleetos_client = MCPClient(sys.executable, [str(HERE / "step2_fleetos_mcp.py")])
     sqlite_client = MCPClient("uvx", ["mcp-server-sqlite", "--db-path", str(DB_PATH)])
 
@@ -234,11 +257,11 @@ def run_fleet_analyst(verbose: bool = False) -> str:
         all_tools = fleetos_tools + sqlite_tools + [WRITE_FILE_TOOL]
         tool_map: dict[str, Any] = {**fleetos_map, **sqlite_map}
 
-        client = anthropic.Anthropic(api_key=api_key)
         messages = [{"role": "user", "content": USER_PROMPT}]
 
         MAX_TURNS = 20
         turn = 0
+        response = None
         while True:
             turn += 1
             if turn > MAX_TURNS:
@@ -247,60 +270,61 @@ def run_fleet_analyst(verbose: bool = False) -> str:
             if verbose:
                 print(f"\n[Turn {turn}]")
 
-            response = client.messages.create(
-                model=MODEL,
-                max_tokens=8192,
-                system=SYSTEM_PROMPT,
+            response = call_claude(
+                messages,
                 tools=all_tools,
-                messages=messages,
+                system=SYSTEM_PROMPT,
+                max_tokens=8192,
             )
 
+            stop_reason = response["stop_reason"]
+            content = response["content"]
+
             if verbose:
-                print(f"  Stop reason: {response.stop_reason}")
-                for block in response.content:
-                    if hasattr(block, "text"):
-                        preview = block.text[:200]
-                        print(f"  Text: {preview}")
-                    elif block.type == "tool_use":
-                        args_str = str(block.input)[:100]
-                        print(f"  -> {block.name}({args_str})")
+                print(f"  Stop reason: {stop_reason}")
+                for block in content:
+                    if block.get("type") == "text":
+                        print(f"  Text: {block['text'][:200]}")
+                    elif block.get("type") == "tool_use":
+                        args_str = str(block["input"])[:100]
+                        print(f"  -> {block['name']}({args_str})")
 
-            messages.append({"role": "assistant", "content": response.content})
+            messages.append({"role": "assistant", "content": content})
 
-            if response.stop_reason == "max_tokens":
+            if stop_reason == "max_tokens":
                 print(f"Warning: response truncated at turn {turn}")
                 break
 
-            if response.stop_reason == "end_turn":
-                for block in response.content:
-                    if hasattr(block, "text"):
-                        return block.text
+            if stop_reason == "end_turn":
+                for block in content:
+                    if block.get("type") == "text":
+                        return block["text"]
                 return "Briefing complete."
 
             tool_results = []
-            for block in response.content:
-                if block.type != "tool_use":
+            for block in content:
+                if block.get("type") != "tool_use":
                     continue
 
-                if block.name == "write_file":
+                if block["name"] == "write_file":
                     result = handle_write_file(
-                        block.input.get("path", "output.txt"),
-                        block.input.get("content", ""),
+                        block["input"].get("path", "output.txt"),
+                        block["input"].get("content", ""),
                     )
                     if verbose:
                         print(f"  <- {result}")
-                elif block.name in tool_map:
-                    mcp_client, original_name = tool_map[block.name]
-                    result = mcp_client.call_tool(original_name, block.input)
+                elif block["name"] in tool_map:
+                    mcp_client, original_name = tool_map[block["name"]]
+                    result = mcp_client.call_tool(original_name, block["input"])
                     if verbose:
                         preview = result[:200] + "..." if len(result) > 200 else result
                         print(f"  <- {preview}")
                 else:
-                    result = f"Unknown tool: {block.name}"
+                    result = f"Unknown tool: {block['name']}"
 
                 tool_results.append({
                     "type": "tool_result",
-                    "tool_use_id": block.id,
+                    "tool_use_id": block["id"],
                     "content": result,
                 })
 
@@ -309,9 +333,10 @@ def run_fleet_analyst(verbose: bool = False) -> str:
 
             messages.append({"role": "user", "content": tool_results})
 
-        for block in response.content:
-            if hasattr(block, "text"):
-                return block.text
+        if response:
+            for block in response["content"]:
+                if block.get("type") == "text":
+                    return block["text"]
         return "Agent loop ended."
 
     finally:
