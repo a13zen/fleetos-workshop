@@ -27,7 +27,7 @@ except ImportError:
 HERE = Path(__file__).resolve().parent
 FLEET_DATA_DIR = HERE.parent / "fleetos_api" / "data"
 
-MODEL = "claude-haiku-4-5-20251001"
+MODEL = "claude-haiku-4-5"
 
 # Tool definition: read a CSV file and return its contents as a string
 TOOLS = [
@@ -117,10 +117,14 @@ def run_agent(prompt: str, verbose: bool = False) -> str:
     client = anthropic.Anthropic(api_key=api_key)
 
     messages = [{"role": "user", "content": prompt}]
+    MAX_TURNS = 20
     turn = 0
 
     while True:
         turn += 1
+        if turn > MAX_TURNS:
+            print(f"Warning: agent exceeded {MAX_TURNS} turns, stopping")
+            break
         if verbose:
             print(f"\n[Turn {turn}] Sending to model...")
 
@@ -136,6 +140,10 @@ def run_agent(prompt: str, verbose: bool = False) -> str:
 
         # Append assistant response to the conversation
         messages.append({"role": "assistant", "content": response.content})
+
+        if response.stop_reason == "max_tokens":
+            print(f"Warning: response truncated at turn {turn}")
+            break
 
         # If no more tool calls, we're done
         if response.stop_reason == "end_turn":
