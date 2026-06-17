@@ -105,9 +105,9 @@ body {
 }
 
 .col-location {
-  white-space: nowrap;
-  max-width: 180px;
-  overflow: hidden;
+  max-width: 220px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .status-pill {
@@ -119,8 +119,8 @@ body {
 }
 
 .status-active {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: #dcfce7;
+  color: #166534;
 }
 
 .status-maintenance {
@@ -129,8 +129,8 @@ body {
 }
 
 .status-overdue {
-  background: #dcfce7;
-  color: #166534;
+  background: #fee2e2;
+  color: #b91c1c;
 }
 
 .status-retired {
