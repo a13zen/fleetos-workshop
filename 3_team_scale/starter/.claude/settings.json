@@ -1,1 +1,15 @@
-{}
+{
+  "permissions": {
+    "defaultMode": "dontAsk",
+    "allow": [
+      "Bash(curl *localhost:8001*)",
+      "Read",
+      "Grep",
+      "Glob",
+      "Edit",
+      "Write",
+      "Task"
+    ],
+    "deny": ["WebFetch", "WebSearch"]
+  }
+}
