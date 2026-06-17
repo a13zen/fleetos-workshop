@@ -15,10 +15,21 @@ Fill in the TODO, then run:
 """
 
 import sys
+import os
 import asyncio
 from pathlib import Path
 from claude_agent_sdk import query, ClaudeAgentOptions
 from verbose import print_verbose
+
+
+_BEDROCK_KEYS = [
+    "CLAUDE_CODE_USE_BEDROCK", "AWS_BEARER_TOKEN_BEDROCK",
+    "AWS_REGION", "ANTHROPIC_DEFAULT_HAIKU_MODEL", "ANTHROPIC_DEFAULT_SONNET_MODEL",
+]
+
+
+def bedrock_env() -> dict:
+    return {k: v for k, v in os.environ.items() if k in _BEDROCK_KEYS and v}
 
 HERE = Path(__file__).resolve().parent
 DB_PATH = HERE / "data" / "fleet_ops.db"
@@ -66,6 +77,7 @@ async def main():
             allowed_tools=["mcp__fleetos", "mcp__sqlite"],
             permission_mode="bypassPermissions",
             setting_sources=["local"],
+            env=bedrock_env(),
         ),
     ):
         print_verbose(message)
