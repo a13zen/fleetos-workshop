@@ -66,7 +66,12 @@ def call_claude(messages, tools=None, system=None, max_tokens=4096):
         body["system"] = system
 
     r = httpx.post(url, headers=headers, json=body, timeout=120.0)
-    r.raise_for_status()
+    try:
+        r.raise_for_status()
+    except httpx.HTTPStatusError as e:
+        raise RuntimeError(
+            f"Bedrock API error {e.response.status_code}: {e.response.text}"
+        ) from e
     return r.json()
 
 SYSTEM_PROMPT = """\
@@ -141,24 +146,32 @@ class MCPClient:
         self._proc.stdin.flush()
 
     def _recv(self) -> dict:
-        line = self._proc.stdout.readline()
-        if not line:
-            raise RuntimeError("MCP server process exited unexpectedly")
-        try:
-            return json.loads(line.strip())
-        except json.JSONDecodeError as e:
-            raise RuntimeError(f"MCP server sent invalid JSON: {line!r}") from e
+        while True:
+            line = self._proc.stdout.readline()
+            if not line:
+                raise RuntimeError("MCP server process exited unexpectedly")
+            try:
+                msg = json.loads(line.strip())
+            except json.JSONDecodeError as e:
+                raise RuntimeError(f"MCP server sent invalid JSON: {line!r}") from e
+            if "id" in msg:
+                return msg
 
     def list_tools(self) -> list[dict]:
         req_id = self._next_id()
         self._send({"jsonrpc": "2.0", "id": req_id, "method": "tools/list", "params": {}})
-        return self._recv().get("result", {}).get("tools", [])
+        resp = self._recv()
+        if "error" in resp:
+            raise RuntimeError(f"tools/list failed: {resp['error']}")
+        return resp.get("result", {}).get("tools", [])
 
     def call_tool(self, name: str, arguments: dict) -> str:
         req_id = self._next_id()
         self._send({"jsonrpc": "2.0", "id": req_id, "method": "tools/call",
                     "params": {"name": name, "arguments": arguments}})
         resp = self._recv()
+        if "error" in resp:
+            return f"MCP error: {resp['error'].get('message', str(resp['error']))}"
         content = resp.get("result", {}).get("content", [])
         parts = []
         for block in content:
@@ -172,7 +185,10 @@ class MCPClient:
         if self._proc:
             self._proc.stdin.close()
             self._proc.terminate()
-            self._proc.wait(timeout=5)
+            try:
+                self._proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                self._proc.kill()
 
 
 def build_tools_for_mcp(client: MCPClient, namespace: str) -> tuple[list[dict], dict]:
