@@ -35,7 +35,7 @@ except ImportError:
 
 HERE = Path(__file__).resolve().parent
 DB_PATH = HERE / "data" / "fleet_ops.db"
-MODEL = "claude-haiku-4-5-20251001"
+MODEL = "claude-haiku-4-5"
 
 DEFAULT_QUESTION = (
     "Which vehicles are flagged overdue or due soon by the FleetOS API "
@@ -216,8 +216,11 @@ class MCPClient:
     def _recv(self) -> dict:
         line = self._proc.stdout.readline()
         if not line:
-            return {}
-        return json.loads(line.strip())
+            raise RuntimeError("MCP server process exited unexpectedly")
+        try:
+            return json.loads(line.strip())
+        except json.JSONDecodeError as e:
+            raise RuntimeError(f"MCP server sent invalid JSON: {line!r}") from e
 
     def list_tools(self) -> list[dict]:
         req_id = self._next_id()
@@ -309,9 +312,13 @@ def run_two_source_agent(question: str, verbose: bool = False) -> str:
             }
         ]
 
+        MAX_TURNS = 20
         turn = 0
         while True:
             turn += 1
+            if turn > MAX_TURNS:
+                print(f"Warning: agent exceeded {MAX_TURNS} turns, stopping")
+                break
             if verbose:
                 print(f"\n[Turn {turn}]")
 
@@ -331,6 +338,10 @@ def run_two_source_agent(question: str, verbose: bool = False) -> str:
                         print(f"  -> Tool: {block.name}({block.input})")
 
             messages.append({"role": "assistant", "content": response.content})
+
+            if response.stop_reason == "max_tokens":
+                print(f"Warning: response truncated at turn {turn}")
+                break
 
             if response.stop_reason == "end_turn":
                 for block in response.content:

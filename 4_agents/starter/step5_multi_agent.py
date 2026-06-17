@@ -21,6 +21,7 @@ import os
 import sys
 import json
 import subprocess
+import pathlib
 from pathlib import Path
 from typing import Any
 import anthropic
@@ -34,7 +35,7 @@ except ImportError:
 
 HERE = Path(__file__).resolve().parent
 DB_PATH = HERE / "data" / "fleet_ops.db"
-MODEL = "claude-haiku-4-5-20251001"
+MODEL = "claude-haiku-4-5"
 
 
 # ---------------------------------------------------------------------------
@@ -76,7 +77,12 @@ class MCPClient:
 
     def _recv(self) -> dict:
         line = self._proc.stdout.readline()
-        return json.loads(line.strip()) if line.strip() else {}
+        if not line:
+            raise RuntimeError("MCP server process exited unexpectedly")
+        try:
+            return json.loads(line.strip())
+        except json.JSONDecodeError as e:
+            raise RuntimeError(f"MCP server sent invalid JSON: {line!r}") from e
 
     def list_tools(self) -> list[dict]:
         req_id = self._next_id()
@@ -134,14 +140,20 @@ WRITE_FILE_TOOL = {
 }
 
 
+ALLOWED_DIRS = [HERE, HERE.parent / "dashboard"]
+
+
 def handle_write_file(path: str, content: str) -> str:
     try:
-        p = Path(path)
+        p = pathlib.Path(path)
         if not p.is_absolute():
             p = HERE / p
-        p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_text(content, encoding="utf-8")
-        return f"Wrote {len(content)} characters to {p}"
+        resolved = p.resolve()
+        if not any(resolved.is_relative_to(d.resolve()) for d in ALLOWED_DIRS):
+            return f"Error: path {path!r} is outside allowed directories"
+        resolved.parent.mkdir(parents=True, exist_ok=True)
+        resolved.write_text(content, encoding="utf-8")
+        return f"Wrote {len(content)} characters to {resolved}"
     except Exception as e:
         return f"Error: {e}"
 
@@ -172,9 +184,13 @@ def run_sub_agent(
     if verbose:
         print(f"\n[{name}] Starting sub-agent")
 
+    MAX_TURNS = 20
     turn = 0
     while True:
         turn += 1
+        if turn > MAX_TURNS:
+            print(f"Warning: agent exceeded {MAX_TURNS} turns, stopping")
+            break
         response = client.messages.create(
             model=MODEL,
             max_tokens=4096,
@@ -190,6 +206,10 @@ def run_sub_agent(
                     print(f"  [{name}] -> {block.name}({str(block.input)[:80]})")
 
         messages.append({"role": "assistant", "content": response.content})
+
+        if response.stop_reason == "max_tokens":
+            print(f"Warning: response truncated at turn {turn}")
+            break
 
         if response.stop_reason == "end_turn":
             for block in response.content:
